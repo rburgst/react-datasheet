@@ -1,6 +1,15 @@
 import { Component, ReactNode, KeyboardEventHandler, MouseEventHandler } from "react";
 
 declare namespace ReactDataSheet {
+
+    export interface DsCustomNavigateEvent {    
+        currentCellIndex: { i: number; j: number }
+        handleNavigate: (e: KeyboardEvent, offsets: { i: number; j: number }, jumpRow?: boolean) => void
+        commit: boolean
+        event: KeyboardEvent
+        isEditing: boolean
+    }
+
     /** The cell object is what gets passed to the callbacks and events, and contains the basic information about what to show in each cell. You should extend this interface to build a place to store your data.
      * @example
      * interface GridElement extends ReactDataSheet.Cell<GridElement> {
@@ -79,12 +88,16 @@ declare namespace ReactDataSheet {
         selected?: Selection | null;
         /** Optional. Calls the function whenever the user changes selection**/
         onSelect?: (selection: Selection) => void;
+
+        onCustomNavigate?: (args: DsCustomNavigateEvent) => boolean;
+
         /** Optional. Function to set row key. **/
         keyFn?: (row: number) => string | number;
         /** Optional: Function that can decide whether navigating to the indicated cell is possible. */
         isCellNavigable?: (cell: T, row: number, col: number, jumpNext: boolean) => boolean;
         /** Optional: Is called when datasheet changes edit mode. */
         editModeChanged?: (inEditMode: boolean) => void;
+
     }
 
     /** A function to process the raw clipboard data. It should return an array of arrays of strings. This is useful for when the clipboard may have data with irregular field or line delimiters. If not set, rows will be split with line breaks and cells with tabs. To wire it up pass your function to the parsePaste property of the ReactDataSheet component. */

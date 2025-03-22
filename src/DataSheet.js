@@ -54,8 +54,9 @@ export default class DataSheet extends PureComponent {
     this.isClearing = this.isClearing.bind(this);
     this.handleComponentKey = this.handleComponentKey.bind(this);
 
-    this.handleKeyboardCellMovement =
-      this.handleKeyboardCellMovement.bind(this);
+    this.handleKeyboardCellMovement = this.handleKeyboardCellMovement.bind(
+      this,
+    );
 
     this.defaultState = {
       start: {},
@@ -292,6 +293,19 @@ export default class DataSheet extends PureComponent {
       return;
     }
 
+    // allow interception via external callback
+
+    if (this.props.onCustomNavigate) {
+      const result = this.props.onCustomNavigate({
+        commit,
+        event: e,
+        handleNavigate: this.handleNavigate,
+      });
+      if (result) {
+        return true;
+      }
+    }
+
     if (keyCode === TAB_KEY) {
       this.handleNavigate(e, { i: 0, j: e.shiftKey ? -1 : 1 }, true);
     } else if (keyCode === RIGHT_KEY) {
@@ -326,15 +340,34 @@ export default class DataSheet extends PureComponent {
     const currentCell = !noCellsSelected && this.props.data[start.i][start.j];
     const equationKeysPressed =
       [
-        187 /* equal */, 189 /* substract */, 190 /* period */, 107 /* add */,
-        109 /* decimal point */, 110,
+        187 /* equal */,
+        189 /* substract */,
+        190 /* period */,
+        107 /* add */,
+        109 /* decimal point */,
+        110,
       ].indexOf(keyCode) > -1;
 
-    if (noCellsSelected || ctrlKeyPressed) {
+    if (noCellsSelected) {
+      return true;
+    }
+    if (!this.props.onCustomNavigate && ctrlKeyPressed) {
       return true;
     }
 
     if (!isEditing) {
+      if (this.props.onCustomNavigate) {
+        const result = this.props.onCustomNavigate({
+          commit: true,
+          isEditing,
+          event: e,
+          handleNavigate: this.handleNavigate,
+          currentCellIndex: { i: start.i, j: start.j },
+        });
+        if (result) {
+          return true;
+        }
+      }
       this.handleKeyboardCellMovement(e);
       if (deleteKeysPressed) {
         e.preventDefault();
