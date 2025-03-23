@@ -297,6 +297,8 @@ export default class DataSheet extends PureComponent {
 
     if (this.props.onCustomNavigate) {
       const result = this.props.onCustomNavigate({
+        isEditing,
+        currentCellIndex: { i: start.i, j: start.j },
         commit,
         event: e,
         handleNavigate: this.handleNavigate,
